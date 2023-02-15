@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Whistle插件-BI自动化</title>
+    <link rel="stylesheet" href="./index.css" />
+  </head>
+  <body>
+    <div id="tips"></div>
+    <div id="root">
+      <header>
+        <label style="font-weight: bold">
+          <input id="active" type="checkbox" />
+          自动保存bi上报数据
+        </label>
+      </header>
+      <div class="wrapper">
+        <div class="list">
+          <ul id="statList"></ul>
+        </div>
+        <div id="statData" class="stat-data-box"></div>
+      </div>
+    </div>
+    <script src="jquery.js"></script>
+    <script src="index.js"></script>
+    <script>
+      (function () {
+        init();
+      })();
+    </script>
+  </body>
+</html>

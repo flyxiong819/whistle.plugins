@@ -1,0 +1,7 @@
+module.exports = (ctx) => {
+  const { localStorage } = ctx.req;
+  ctx.body = {
+    ec: 0,
+    statArr: JSON.parse(localStorage.getProperty('statArr')),
+  };
+};

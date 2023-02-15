@@ -1,0 +1,60 @@
+.home {
+  display: flex;
+  height: 100vh;
+  .stat-list {
+    width: 50%;
+    height: 100%;
+    overflow-y: scroll;
+    border-right: 10px solid #cccccc;
+    .stat-item {
+      display: flex;
+      padding-left: 30px;
+      height: 25px;
+      line-height: 25px;
+      color: rgba(0, 0, 0, 0.8);
+      text-align: left;
+      .stat-item-code {
+      }
+      .stat-item-desc {
+        margin-left: 16px;
+      }
+    }
+    .stat-item:nth-child(2n) {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+    .stat-item.clicked {
+      background-color: rgba(72, 154, 248, 0.2);
+    }
+  }
+  .stat-detail-box {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    height: 100%;
+    .stat-detail {
+      display: flex;
+      flex-flow: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding-left: 16px;
+      height: 45%;
+      width: 100%;
+      overflow-y: scroll;
+      background-color: rgba(0, 0, 0, 1);
+      color: #ffffff;
+      word-break: break-all;
+      .stat-ext {
+        display: flex;
+        padding-left: 32px;
+        .stat-ext-key {
+          color: yellow;
+        }
+        .stat-ext-val {
+          color: greenyellow;
+        }
+      }
+    }
+  }
+}

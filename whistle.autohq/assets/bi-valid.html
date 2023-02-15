@@ -1,0 +1,323 @@
+<script src="https://zeptojs.com/zepto.min.js"></script>
+
+<script type="text/javascript">
+  const biConfig = {
+    "wphk.bankcard.banklist.home_brow": "银行卡页面-浏览量-曝光",
+    "wphk.bankcard.banklist.detail_click": "银行卡页面-点击查看银行卡详情",
+    "wallet.scanpay.not_opened.fps_bank_click":
+      "收付款-未开启场景-「向银行转账」点击",
+    "wallet.scanpay.not_opened.fps_phone_click":
+      "收付款-未开启场景-「向手机号码转账」点击",
+    "wallet.scanpay.not_opened.fps_qrcode_click":
+      "收付款-未开启场景-「FPS收款码」点击",
+    "wallet.scanpay.not_opened.chart_brow":
+      "收付款-未开启场景-无密用户设密弹框曝光",
+  };
+
+  let reportedTagArr = [];
+  let reportedTagMap = {};
+
+  const savedInfo = localStorage.getItem("reportedTagArr");
+  reportedTagArr = savedInfo ? JSON.parse(savedInfo) : [];
+
+  window.$$__thirdPart = {
+    onmessage: function (event, params) {
+      console.log("third-part", event, params);
+      const tag = params.tag;
+      reportedTagArr.push({
+        tag: params.tag,
+        extBiParams: params.extBiParams,
+      });
+      reportedTagMap[params.tag] = true;
+      $("#bi-box").prepend(
+        $(
+          '<div class="bi-message">' +
+            reportedTagArr.length +
+            "、" +
+            tag +
+            "<br />" +
+            (biConfig[tag] || "页面停留时间") +
+            (params.extBiParams && Object.keys(params.extBiParams).length > 0
+              ? "<br />" + JSON.stringify(params.extBiParams)
+              : "") +
+            "</div>"
+        )
+      );
+      dealPercent();
+      saveList();
+    },
+  };
+  function analyse() {
+    const notReportArr = [];
+    const hasReportArr = [];
+    Object.keys(biConfig).forEach((key) => {
+      if (!reportedTagMap[key]) {
+        notReportArr.push({
+          key,
+          name: biConfig[key],
+        });
+      } else {
+        hasReportArr.push({
+          key,
+          name: biConfig[key],
+        });
+      }
+    });
+    return { notReportArr, hasReportArr };
+  }
+
+  function dealReport() {
+    $("#bi-report").on("touchstart", (e) => {
+      $("#bi-icon").removeClass("bi-small");
+      $("#bi-icon").addClass("report-box");
+      const { notReportArr, hasReportArr } = analyse();
+      $("#report-bi-box").append(
+        '<div class="report-title">######### 未覆盖bi上报点list ######### </div>'
+      );
+      notReportArr.forEach((item, i) => {
+        $("#report-bi-box").append(
+          $(
+            '<div class="bi-message">' +
+              (i + 1) +
+              "、" +
+              item.key +
+              "<br/>" +
+              item.name
+          )
+        );
+      });
+      $("#report-bi-box").append(
+        '<div class="report-title">######### 已覆盖bi上报点list ######### </div>'
+      );
+      hasReportArr.forEach((item, i) => {
+        $("#report-bi-box").append(
+          $(
+            '<div class="bi-message">' +
+              (i + 1) +
+              "、" +
+              item.key +
+              "<br/>" +
+              item.name
+          )
+        );
+      });
+    });
+
+    $("#bi-report-back").on("touchstart", (e) => {
+      $("#bi-icon").removeClass("report-box");
+    });
+  }
+  function dealScale() {
+    const biElm = $("#bi-icon");
+    $("#bi-fgl,#bi-percent").on("touchstart", (e) => {
+      if (biElm.hasClass("bi-small")) {
+        biElm.removeClass("bi-small");
+      } else {
+        biElm.addClass("bi-small");
+      }
+    });
+  }
+
+  function dealChangePos() {
+    const biElm = $("#bi-icon");
+    $("#bi-change").on("touchstart", (e) => {
+      if ($("#bi-icon").css("top") !== "5px") {
+        biElm.css({ top: "5px" });
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      } else {
+        biElm.css({ bottom: "5px", top: "auto" });
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+
+  function dealClear() {
+    $("#bi-clear").on("touchstart", (e) => {
+      const isClear = window.confirm("你是否要清理bi上报记录？");
+      if (isClear) {
+        localStorage.setItem("reportedTagArr", "");
+        reportedTagArr = [];
+        reportedTagMap = [];
+        $("#report-bi-box").html("");
+        $("#bi-box").html("");
+        dealPercent();
+      }
+    });
+  }
+
+  function dealPercent() {
+    const total = Object.keys(biConfig).length;
+    const reportedTagLength = Object.keys(reportedTagMap).length;
+    const percent = parseInt((reportedTagLength / total) * 100);
+    $("#bi-percent").html(percent + "%");
+  }
+
+  function saveList() {
+    localStorage.setItem("reportedTagArr", JSON.stringify(reportedTagArr));
+  }
+
+  function drag() {
+    const ele = $("#bi-icon");
+    const touchEle = $("#bi-title");
+    touchEle.on("touchstart", function (ev) {
+      var disX = ev.targetTouches[0].pageX - ele.position().left;
+      var disY = ev.targetTouches[0].pageY - ele.position().top;
+
+      touchEle.on("touchmove", function (ev) {
+        ele.css({
+          left: ev.targetTouches[0].pageX - disX + "px",
+          top: ev.targetTouches[0].pageY - disY + "px",
+        });
+      });
+
+      touchEle.on("touchend", function () {
+        touchEle.off("touchstart", "touchmove");
+      });
+    });
+  }
+
+  $(function () {
+    $(document.body).append(
+      $(
+        '<div id="bi-icon" class="bi-small" ><div><div id="bi-title"><span id="bi-fgl">bi覆盖率</span><span id="bi-percent">0%</span><span id="bi-clear">清理</span><span id="bi-report">报告</span><span id="bi-change">移动</span><span id="bi-report-back">返回</span></div><div id="bi-box"></div><div id="report-bi-box"></div> </div></div>'
+      )
+    );
+    //drag();
+
+    reportedTagArr.forEach((item, i) => {
+      reportedTagMap[item.tag] = true;
+      $("#bi-box").prepend(
+        $(
+          '<div class="bi-message">' +
+            (i + 1) +
+            "、" +
+            item.tag +
+            "<br />" +
+            (biConfig[item.tag] || "页面停留时间") +
+            (item.extBiParams && Object.keys(item.extBiParams).length > 0
+              ? "<br />" + JSON.stringify(item.extBiParams)
+              : "") +
+            "</div>"
+        )
+      );
+    });
+
+    dealPercent();
+    dealReport();
+    dealScale();
+    dealChangePos();
+    dealClear();
+  });
+</script>
+<style type="text/css">
+  #bi-icon {
+    position: fixed;
+    z-index: 1000000;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    left: 5px;
+    bottom: 5px;
+    color: white;
+    font-size: 10px;
+    padding: 5px;
+    /*pointer-events: none;*/
+    height: 80px;
+  }
+
+  .report-box {
+    top: 5px;
+    height: 530px !important;
+    width: 90%;
+  }
+
+  #report-bi-box {
+    display: none;
+  }
+
+  .report-box #report-bi-box {
+    display: block;
+  }
+
+  .report-box #bi-box {
+    display: none;
+  }
+
+  .report-box #report-bi-box {
+    height: 500px;
+  }
+
+  .report-box #bi-clear,
+  .report-box #bi-report,
+  .report-box #bi-change {
+    display: none;
+  }
+
+  .report-title {
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  .report-box #bi-report-back {
+    display: block !important;
+  }
+
+  #bi-box,
+  #report-bi-box {
+    height: 60px;
+    overflow: scroll;
+    min-width: 250px;
+  }
+
+  .bi-message {
+    font-size: 10px;
+  }
+
+  .bi-message:first-child {
+    color: yellow;
+    font-weight: 500px;
+    font-size: 10px;
+  }
+
+  #bi-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #bi-title span {
+    flex: 1;
+    text-align: center;
+    display: inline-block;
+  }
+
+  #bi-clear,
+  #bi-report,
+  #bi-change,
+  #bi-report-back {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    font-size: 10px;
+    margin: 0 5px;
+  }
+
+  #bi-report-back {
+    display: none !important;
+  }
+
+  .bi-small #bi-clear,
+  .bi-small #bi-report,
+  .bi-small #bi-change,
+  .bi-small #bi-report-back,
+  .bi-small #bi-box {
+    display: none !important;
+  }
+
+  .bi-small {
+    width: 100px !important;
+    height: 16px !important;
+  }
+</style>
